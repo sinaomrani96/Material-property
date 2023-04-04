@@ -68,37 +68,37 @@ MyFluidTempl<is_ad>::computeQpProperties()
   {
     if (is_ad)
     {
-      GenericReal<is_ad> rho, mu;
+      GenericReal<is_ad> rho, viscosity1;
       _fp.rho_mu_from_p_T(_porepressure[_qp][_phase_num] * _pressure_to_Pascals,
                           _temperature[_qp] + _t_c2k,
                           rho,
-                          mu);
+                          viscosity1);
 
       (*_density)[_qp] = rho;
-      (*_viscosity)[_qp] = mu;
+      (*_viscosity)[_qp] = MetaPhysicL::raw_value(_viscosity1[_qp]);
     }
     else
     {
       // Density and viscosity, and derivatives wrt pressure and temperature
-      Real rho, drho_dp, drho_dT, mu, dmu_dp, dmu_dT;
+      Real rho, drho_dp, drho_dT, viscosity1, dmu_dp, dmu_dT;
       _fp.rho_mu_from_p_T(MetaPhysicL::raw_value(_porepressure[_qp][_phase_num]) *
                               _pressure_to_Pascals,
                           MetaPhysicL::raw_value(_temperature[_qp]) + _t_c2k,
                           rho,
                           drho_dp,
                           drho_dT,
-                          mu,
+                          viscosity1,
                           dmu_dp,
                           dmu_dT);
       (*_density)[_qp] = rho;
       (*_ddensity_dp)[_qp] = drho_dp * _pressure_to_Pascals;
       (*_ddensity_dT)[_qp] = drho_dT;
       (*_viscosity)[_qp] = MetaPhysicL::raw_value(_viscosity1[_qp]);
-      (*_dviscosity_dp)[_qp] = dmu_dp / _time_to_seconds;
-      (*_dviscosity_dT)[_qp] = dmu_dT / _pressure_to_Pascals / _time_to_seconds;
+      (*_dviscosity_dp)[_qp] = MetaPhysicL::raw_value(_viscosity1[_qp]) / _time_to_seconds;
+      (*_dviscosity_dT)[_qp] = MetaPhysicL::raw_value(_viscosity1[_qp]) / _pressure_to_Pascals / _time_to_seconds;
     }
   }
-
+  
   if (_compute_internal_energy)
   {
     if (is_ad)
