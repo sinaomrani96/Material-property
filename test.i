@@ -1,13 +1,4 @@
-# phase = 0 is liquid phase
-# phase = 1 is gas phase
-# fluid_component = 0 is water
-# fluid_component = 1 is CO2
 
-# Constant rate of CO2 injection into the left boundary
-# 1D mesh
-# The PorousFlowPiecewiseLinearSinks remove the correct water and CO2 from the right boundary
-
-# Note i take pretty big timesteps here so the system is quite nonlinear
 [Mesh]
   [gen]
     type = GeneratedMeshGenerator
