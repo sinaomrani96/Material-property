@@ -75,7 +75,7 @@ MyFluidTempl<is_ad>::computeQpProperties()
                           viscosity1);
 
       (*_density)[_qp] = rho;
-      (*_viscosity)[_qp] = MetaPhysicL::raw_value(_viscosity1[_qp]);
+      (*_viscosity)[_qp] = _viscosity1[_qp];
     }
     else
     {
