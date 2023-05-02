@@ -19,7 +19,7 @@
     family = MONOMIAL
     initial_condition = 0
   []
-  [x01]
+  [x00]
     order = CONSTANT
     family = MONOMIAL
     initial_from_file_var = x01
@@ -29,10 +29,36 @@
     family = MONOMIAL
     initial_condition = 0
   []
+  [x01]
+    order = CONSTANT
+    family = MONOMIAL
+  []
   [x11]
     order = CONSTANT
     family = MONOMIAL
     initial_condition = 0
+  []
+  [x02]
+    order = CONSTANT
+    family = MONOMIAL
+    initial_condition = 0
+  []
+  [x12]
+    order = CONSTANT
+    family = MONOMIAL
+    initial_condition = 1
+  []
+  [d1]
+    order = CONSTANT
+    family = MONOMIAL
+  []
+  [d2]
+    order = CONSTANT
+    family = MONOMIAL
+  []
+  [d3]
+    order = CONSTANT
+    family = MONOMIAL
   []
 []
 
@@ -44,12 +70,12 @@
     phase = 1
     execute_on = 'timestep_end'
   []
-  [x01]
+  [x00]
     type = PorousFlowPropertyAux
-    variable = x01
+    variable = x00
     property = mass_fraction
     phase = 0
-    fluid_component = 1
+    fluid_component = 0
     execute_on = 'timestep_end'
   []
   [x10]
@@ -60,6 +86,14 @@
     fluid_component = 0
     execute_on = 'timestep_end'
   []
+  [x01]
+    type = PorousFlowPropertyAux
+    variable = x01
+    property = mass_fraction
+    phase = 0
+    fluid_component = 1
+    execute_on = 'timestep_end'
+  []
   [x11]
     type = PorousFlowPropertyAux
     variable = x11
@@ -68,6 +102,40 @@
     fluid_component = 1
     execute_on = 'timestep_end'
   []
+  [x02]
+    type = PorousFlowPropertyAux
+    variable = x02
+    property = mass_fraction
+    phase = 0
+    fluid_component = 2
+    execute_on = 'timestep_end'
+  []
+  [x12]
+    type = PorousFlowPropertyAux
+    variable = x12
+    property = mass_fraction
+    phase = 1
+    fluid_component = 2
+    execute_on = 'timestep_end'
+  []
+#  [f1]
+#    type = DebugResidualAux
+#    variable = d1
+ #   debug_variable = pwater
+ #   execute_on = 'TIMESTEP_END'
+#  []
+ # [f2]
+ #   type = DebugResidualAux
+ #   variable = d2
+ #   debug_variable = tracer
+ #   execute_on = 'TIMESTEP_END'
+ # []
+ # [f3]
+ #   type = DebugResidualAux
+ #   variable = d3
+ #   debug_variable = satg
+ #   execute_on = 'TIMESTEP_END'
+ # []
 []
 
 [Variables]
@@ -76,32 +144,33 @@
   []
   [satg]
     initial_condition = 0
+    scaling = 1e-2
   []
   [tracer]
     initial_from_file_var = tracer_concentration
-    scaling = 1e-4
+    scaling = 1e-2
   []
 []
 
 [Kernels]
   [mass0]
     type = PorousFlowMassTimeDerivative
-    fluid_component = 1
+    fluid_component = 0
     variable = pwater
   []
   [flux0]
     type = PorousFlowAdvectiveFlux
-    fluid_component = 1
+    fluid_component = 0
     variable = pwater
   []
   [mass1]
     type = PorousFlowMassTimeDerivative
-    fluid_component = 0
+    fluid_component = 1
     variable = tracer
   []
   [flux1]
     type = PorousFlowAdvectiveFlux
-    fluid_component = 0
+    fluid_component = 1
     variable = tracer
   []
   [mass2]
@@ -125,11 +194,11 @@
     number_fluid_components = 3
   []
   [pc]
-     type = PorousFlowCapillaryPressureBC
-     lambda = 2.0
-     pe = 1e4
-    #type = PorousFlowCapillaryPressureConst
-    #pc = 0
+    # type = PorousFlowCapillaryPressureBC
+    # lambda = 2.0
+    # pe = 1e4
+    type = PorousFlowCapillaryPressureConst
+    pc = 0
   []
 []
 
@@ -156,6 +225,16 @@
     interpolated_properties = 'density viscosity enthalpy internal_energy'
     fluid_property_file = co2_tabulated_11.csv
   []
+  [s1]
+    type = SimpleFluidProperties
+    density0 = 1000
+    viscosity = 0.001
+  []
+  [s2]
+    type = SimpleFluidProperties
+    density0 = 700
+    viscosity = 0.00002
+  []
 []
 
 [Materials]
@@ -175,7 +254,7 @@
   []
   [massfrac]
     type = PorousFlowMassFraction
-    mass_fraction_vars = 'tracer x01 x10 x11'
+    mass_fraction_vars = 'x00 tracer x10 x11'
   []
   [saturation_calculator]
     type = PorousFlow2PhasePS
@@ -199,21 +278,26 @@
   []
   [relperm_water]
     type = PorousFlowRelativePermeabilityBC
+    #type = PorousFlowRelativePermeabilityConst
+    #kr = 0.7
     lambda = 2.0
     phase = 0
-    s_res = 0.35
-    sum_s_res = 0.4
+    s_res = 0.1
+    sum_s_res = 0.2
     nw_phase = false
   []
   [relperm_gas]
     type = PorousFlowRelativePermeabilityBC
     lambda = 2.0
     nw_phase = true
+   #type = PorousFlowRelativePermeabilityConst
+   #kr = 0.4
     phase = 1
-    s_res = 0.05
-    sum_s_res = 0.4
+    s_res = 0.1
+    sum_s_res = 0.2
   []
 []
+
 
 [BCs]
   [injection]
@@ -222,33 +306,69 @@
     flux_function = -3e-3
     boundary = 'left'
   []
-  [outt]
-    type = PorousFlowPiecewiseLinearSink
-    variable = tracer
-    boundary = right
-    fluid_phase = 0
-    pt_vals = '0 1E3 1E5 1E7 1E9'
-    multipliers = '0 1E3 1E5 1E7 1E9'
-    PT_shift = 1
-    mass_fraction_component = 0
-    use_mobility = false
-    use_relperm = false
-    flux_function = 10 # 1/L
-  [] 
-  [outp]
-    type = PorousFlowPiecewiseLinearSink
+  [rp]
+    type = DirichletBC
     variable = pwater
     boundary = right
-    fluid_phase = 0
-    pt_vals = '0 1E3 1E5 1E7 1E9'
-    multipliers = '0 1E3 1E5 1E7 1E9'
-    PT_shift = 20e6
-    mass_fraction_component = 1
-    use_mobility = true
-    use_relperm = true
-    flux_function = 10 # 1/L
-  [] 
+    value = 20e6
+  []
+ # #[rs]
+  #  type = DirichletBC
+  #  variable = satg
+  #  boundary = right
+  #  value = 0
+  #[]
+  #[rt]
+ #   type = DirichletBC
+   # variable = tracer
+  #  boundary = left
+  #  value = 1
+  #[]
+ # [lp]
+ #   type = DirichletBC
+  #  variable = pwater
+  #  boundary = left
+  #  value = 20e6
+ # []
+  #[ls]
+  #  type = DirichletBC
+  #  variable = satg
+  #  boundary = left
+  #  value = 0
+ # []
+
+#  [outt]
+#    type = PorousFlowPiecewiseLinearSink
+#    variable = tracer
+#    boundary = right
+#    fluid_phase = 0
+#    pt_vals = '0 1E3 1E5 1E7 1E9'
+#    multipliers = '0 1E3 1E5 1E7 1E9'
+#    PT_shift = 1
+#    mass_fraction_component = 0
+#    use_mobility = false
+#    use_relperm = false
+#    flux_function = 10 # 1/L
+#  [] 
+#  [outp]
+#    type = PorousFlowPiecewiseLinearSink
+#    variable = pwater
+#    boundary = right
+#    fluid_phase = 0
+#    pt_vals = '0 1E3 1E5 1E7 1E9'
+#    multipliers = '0 1E3 1E5 1E7 1E9'
+#    PT_shift = 20e6
+#    mass_fraction_component = 1
+#    use_mobility = true
+#    use_relperm = true
+#    flux_function = 10 # 1/L
+#  [] 
 []
+
+#[Postprocessors]
+#  [m1]
+ #   type = ElementalVariableValue
+
 
 [Preconditioning]
   active = 'preferred'
@@ -270,7 +390,7 @@
 [Executioner]
   type = Transient
   solve_type = NEWTON
-  end_time = 150000
+  end_time = 20
   nl_max_its = 40
   l_max_its = 40
   dtmax = 1800
