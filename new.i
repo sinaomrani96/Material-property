@@ -178,7 +178,7 @@
 [Executioner]
   type = Transient
   solve_type = NEWTON
-  end_time = 1500000
+  end_time = 150000
   nl_max_its = 40
   l_max_its = 40
   dtmax = 1800
