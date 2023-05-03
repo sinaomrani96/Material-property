@@ -10,26 +10,26 @@
       ymin = 0
       ymax = 5
     []
-    [midleft]
-      input = gen
-      type = SubdomainBoundingBoxGenerator
-      block_id = 1
-      bottom_left = '0 3.5 0'
-      top_right = '3.0 4.5 0'
-    []
-    [midright]
-      input = midleft
-      type = SubdomainBoundingBoxGenerator
-      block_id = 2
-      bottom_left = '2.0 1.0 0'
-      top_right = '5.0 1.5 0'
-    []  
-    [rename]
-      type = RenameBlockGenerator
-      old_block = '0 1 2'
-      new_block = '1 2 3'
-      input = 'midright'
-    []
+   # [midleft]
+   #   input = gen
+   #   type = SubdomainBoundingBoxGenerator
+   #   block_id = 1
+   #   bottom_left = '0 3.5 0'
+   #   top_right = '3.0 4.5 0'
+   # []
+   # [midright]
+   #   input = midleft
+   #   type = SubdomainBoundingBoxGenerator
+   #   block_id = 2
+   #   bottom_left = '2.0 1.0 0'
+   #   top_right = '5.0 1.5 0'
+   # []  
+   # [rename]
+   #   type = RenameBlockGenerator
+   #   old_block = '0 1 2'
+   #   new_block = '1 2 3'
+    #  input = 'midright'
+   # []
   []
 
  
@@ -39,7 +39,10 @@
 
 
 [AuxVariables]
-
+  [xss]
+    order = FIRST
+    family = LAGRANGE
+  []
   [x00]
     order = CONSTANT
     family = MONOMIAL
@@ -80,15 +83,23 @@
   [tracer_concentration]
     initial_condition = 0
   []
+  [fuk]
+  []
 []
 
-
+[Kernels]
+  [value]
+    type = MaterialPropertyValue
+    prop_name = ff1
+    variable = fuk
+  []
+[]
 
 [PorousFlowFullySaturated]
   porepressure = porepressure
   coupling_type = Hydro
   gravity = '0 -9.8 0'
-  fp = tabulated_water
+  fp = s1
   mass_fraction_vars = tracer_concentration
   stabilization = Full # Note to reader: 06_KT.i uses KT stabilization - compare the results
 []
@@ -133,6 +144,11 @@
     interpolated_properties = 'density viscosity enthalpy internal_energy'
     fluid_property_file = water97_tabulated_11.csv
   []
+  [s1]
+    type = SimpleFluidProperties
+    density0 = 1000
+    viscosity = 0.001
+  []
 []
 
 [Materials]
@@ -140,16 +156,23 @@
     type = PorousFlowPorosity
     porosity_zero = 0.1
   []
+  [ff1]
+    type = ParsedMaterial
+    property_name = ff1
+    coupled_variables = tracer_concentration
+    expression = 1-tracer_concentration
+    outputs = exodus
+  []
   [permeability_aquifer]
     type = PorousFlowPermeabilityConst
-    block = '2 3'
+ #   block = '2 3'
     permeability = '1E-13 0 0   0 1E-13 0   0 0 1E-13'
   []
-  [permeability_caps]
-    type = PorousFlowPermeabilityConst
-    block = '1'
-    permeability = '1E-15 0 0   0 1E-15 0   0 0 1E-16'
-  []
+ # [permeability_caps]
+ #   type = PorousFlowPermeabilityConst
+ #   block = '1'
+ #   permeability = '1E-15 0 0   0 1E-15 0   0 0 1E-16'
+ # []
 []
 
 [Preconditioning]
