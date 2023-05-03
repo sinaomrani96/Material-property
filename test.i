@@ -358,7 +358,7 @@
     type = PorousFlowPiecewiseLinearSink
     variable = satg
     boundary = right
-    fluid_phase = 0
+    fluid_phase = 1
     pt_vals = '0 1E3 1E5 1E7 1E9'
     multipliers = '0 1E3 1E5 1E7 1E9'
     PT_shift = 20e6
