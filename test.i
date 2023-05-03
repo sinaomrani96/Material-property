@@ -19,10 +19,14 @@
     family = MONOMIAL
     initial_condition = 0
   []
+  [xwater]
+    order = FIRST
+    family = LAGRANGE
+    initial_from_file_var = fuk
+  []
   [x00]
     order = CONSTANT
     family = MONOMIAL
-    initial_from_file_var = x01
   []
   [x10]
     order = CONSTANT
@@ -254,7 +258,7 @@
   []
   [massfrac]
     type = PorousFlowMassFraction
-    mass_fraction_vars = 'x00 tracer x10 x11'
+    mass_fraction_vars = 'xwater tracer x10 x11'
   []
   [saturation_calculator]
     type = PorousFlow2PhasePS
@@ -268,14 +272,14 @@
   []
   [permeability_aquifer]
     type = PorousFlowPermeabilityConst
-    block = '2 3'
+  #  block = '2 3'
     permeability = '1E-13 0 0   0 1E-13 0   0 0 1E-13'
   []
-  [permeability_caps]
-    type = PorousFlowPermeabilityConst
-    block = '1'
-    permeability = '1E-15 0 0   0 1E-15 0   0 0 1E-16'
-  []
+ # [permeability_caps]
+ #   type = PorousFlowPermeabilityConst
+ #   block = '1'
+ #   permeability = '1E-15 0 0   0 1E-15 0   0 0 1E-16'
+#  []
   [relperm_water]
     type = PorousFlowRelativePermeabilityBC
     #type = PorousFlowRelativePermeabilityConst
@@ -337,32 +341,32 @@
   #  value = 0
  # []
 
-#  [outt]
-#    type = PorousFlowPiecewiseLinearSink
-#    variable = tracer
-#    boundary = right
-#    fluid_phase = 0
-#    pt_vals = '0 1E3 1E5 1E7 1E9'
-#    multipliers = '0 1E3 1E5 1E7 1E9'
-#    PT_shift = 1
-#    mass_fraction_component = 0
-#    use_mobility = false
-#    use_relperm = false
-#    flux_function = 10 # 1/L
-#  [] 
-#  [outp]
-#    type = PorousFlowPiecewiseLinearSink
-#    variable = pwater
-#    boundary = right
-#    fluid_phase = 0
-#    pt_vals = '0 1E3 1E5 1E7 1E9'
-#    multipliers = '0 1E3 1E5 1E7 1E9'
-#    PT_shift = 20e6
-#    mass_fraction_component = 1
-#    use_mobility = true
-#    use_relperm = true
-#    flux_function = 10 # 1/L
-#  [] 
+  [outt]
+    type = PorousFlowPiecewiseLinearSink
+    variable = tracer
+    boundary = right
+    fluid_phase = 0
+    pt_vals = '0 1E3 1E5 1E7 1E9'
+    multipliers = '0 1E3 1E5 1E7 1E9'
+    PT_shift = 1
+    mass_fraction_component = 1
+    use_mobility = true
+    use_relperm = true
+    flux_function = 10 # 1/L
+  [] 
+  [outp]
+    type = PorousFlowPiecewiseLinearSink
+    variable = satg
+    boundary = right
+    fluid_phase = 0
+    pt_vals = '0 1E3 1E5 1E7 1E9'
+    multipliers = '0 1E3 1E5 1E7 1E9'
+    PT_shift = 20e6
+    mass_fraction_component = 2
+    use_mobility = true
+    use_relperm = true
+    flux_function = 10 # 1/L
+  [] 
 []
 
 #[Postprocessors]
@@ -390,7 +394,7 @@
 [Executioner]
   type = Transient
   solve_type = NEWTON
-  end_time = 20
+  end_time = 150000
   nl_max_its = 40
   l_max_its = 40
   dtmax = 1800
